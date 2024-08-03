@@ -1,3 +1,3 @@
-# Demo
+# Welcome to Rediani
 
 Anime is good
