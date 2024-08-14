@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400..800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #220000;
+            margin: 0;
+            font-family: "Syne", sans-serif;
+            padding: 0;
+        }
+        .title{
+            color: rgb(255, 255, 255);
+            padding: 10px;
+            font-weight: 500;
+            margin: 0;
+        }
+        .title span {
+            font-size: 3rem;
+            line-height: 0;
+            color: #e4675a;
+        }
+        .title2 {
+            color: rgb(255, 255, 255);
+            font-weight: 500;
+            margin: 10px 0;
+            text-align: center;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .search-box {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+        }
+        .search-box input {
+            width: 100%;
+            max-width: 600px;
+            padding: 10px;
+            font-size: 18px;
+            font-family: "Syne", sans-serif;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        .search-box input:focus {
+            outline: none;
+            border-bottom: 3px solid #e74c3c;
+        }
+        .search-box button {
+            padding: 8px 10px 4px 10px;
+            font-size: 18px;
+            border: none;
+            background-color: #e74c3c;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .search-box button:hover {
+            background-color: #c0392b;
+        }
+        .anime-list {
+            display: flex;
+            flex-wrap: wrap;
+            list-style: none;
+            padding: 0;
+            gap: 10px;
+        }
+        .recommendation-list {
+            list-style: none;
+            padding: 0;
+        }
+        .anime-item {
+            background: #4f0202;
+            padding: 10px;
+            min-width: 200px;
+            flex: 1;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            text-align: center;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .recommendation-item {
+            background: #5b0101;
+            margin: 10px 0;
+            padding: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+            cursor: pointer;
+            text-decoration: none;
+            color: black;
+            position: relative;
+            transition: 0.25s;
+        }
+        .recommendation-item:hover, .anime-item:hover {
+            background-color: #4e0303;
+        }
+        .anime-item img, .recommendation-item img {
+            width: 100%;
+            object-fit: cover;
+            height: 200px;
+            border-radius: 10px;
+        }
+        .recommendation-item img {
+            width: 70px;
+            border-radius: 5px;
+            margin-right: 10px;
+            height: auto;
+        }
+        .anime-item .info, .recommendation-item .info {
+            text-align: left;
+            padding: 10px 0;
+        }
+        .anime-item .info h3, .recommendation-item .info h3 {
+            margin: 10px 0;
+            font-size: 18px;
+            color: #e3e3e3;
+        }
+        .anime-item .info p, .recommendation-item .info p {
+            margin: 10px 0;
+            color: #ffd9d9;
+            font-size: 14px;
+        }
+        .recommendation-item .info .details {
+            color: #ffffff;
+            font-size: 12px;
+        }
+        .anime-item .info .details {
+            color: #eeeeee;
+            font-size: 12px;
+        }
+        .anime-item .info .details span, .recommendation-item .info .details span {
+            display: block;
+        }
+        .recommendation-item .number {
+            padding: 0 8px 3px 8px;
+            border-radius: 0 5px 0 0;
+            font-size: 24px;
+            font-weight: bold;
+            color: #e74c3c;
+            position: absolute;
+            bottom: 10px;
+            background-color: #000000c9;
+        }
+        @media (min-width: 600px) {
+            .title2{
+                font-size: 3em;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+    <title>Anime Search</title>
+</head>
+<body>
+    <h1 class="title">Rediani<span>.</span></h1>
+    <div class="container">
+        <h2 class="title2">Search Anime</h2>
+        <div class="search-box">
+            <input type="text" id="search-input" placeholder="Name, Title, Keyword...">
+            <button onclick="searchAnime()">
+                <span class="material-symbols-outlined">
+                    search
+                </span>
+            </button>
+        </div>
+        <ul class="anime-list" id="anime-list"></ul>
+        <br/>
+        <br/>
+        <h2 style="text-align: left; color: rgb(245, 93, 93)">Popular</h2>
+        <ul class="recommendation-list" id="recommendation-list"></ul>
+    </div>
+
+    <script>
+        const api_url = "https://graphql.anilist.co/";
+
+        const search = document.getElementById('search-input')
+
+        search.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchAnime();
+            }
+        });
+
+        async function searchAnime() {
+            const searchInput = document.getElementById('search-input').value;
+            const query = `
+            query ($search: String) {
+                Page(page: 1, perPage: 10) {
+                    media(search: $search, type: ANIME) {
+                        id
+                        title {
+                            romaji
+                            english
+                            native
+                        }
+                        description
+                        startDate {
+                            year
+                            month
+                            day
+                        }
+                        coverImage {
+                            large
+                        }
+                        episodes
+                        averageScore
+                    }
+                }
+            }`;
+
+            const variables = { search: searchInput };
+
+            const response = await fetch(api_url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({
+                    query: query,
+                    variables: variables
+                })
+            });
+
+            const data = await response.json();
+            displayResults(data.data.Page.media);
+            fetchRecommendations();
+        }
+
+        function displayResults(animes) {
+            const animeList = document.getElementById('anime-list');
+            animeList.innerHTML = '';
+
+            animes.forEach(anime => {
+                const listItem = document.createElement('li');
+                listItem.classList.add('anime-item');
+                listItem.onclick = () => window.location.href = 'https://www.anime-planet.com/anime/all';  // Change this URL to the desired redirection URL
+
+                const img = document.createElement('img');
+                img.src = anime.coverImage.large;
+                listItem.appendChild(img);
+
+                const infoDiv = document.createElement('div');
+                infoDiv.classList.add('info');
+
+                const title = document.createElement('h3');
+                title.textContent = anime.title.romaji + (anime.title.english ? ` (${anime.title.english})` : '');
+                infoDiv.appendChild(title);
+
+                const description = document.createElement('p');
+                description.textContent = anime.description ? anime.description.replace(/<\/?[^>]+(>|$)/g, "").substring(0, 100) + '...' : 'No description available';
+                infoDiv.appendChild(description);
+
+                const details = document.createElement('div');
+                details.classList.add('details');
+
+                const startDate = document.createElement('span');
+                startDate.textContent = `Start Date: ${anime.startDate.year}-${anime.startDate.month}-${anime.startDate.day}`;
+                details.appendChild(startDate);
+
+                const episodes = document.createElement('span');
+                episodes.textContent = `Episodes: ${anime.episodes || 'N/A'}`;
+                details.appendChild(episodes);
+
+                const score = document.createElement('span');
+                score.textContent = `Score: ${anime.averageScore || 'N/A'}`;
+                details.appendChild(score);
+
+                infoDiv.appendChild(details);
+                listItem.appendChild(infoDiv);
+                animeList.appendChild(listItem);
+            });
+        }
+
+        async function fetchRecommendations() {
+            const query = `
+            query {
+                Page(page: 1, perPage: 10) {
+                    media(type: ANIME, sort: POPULARITY_DESC) {
+                        id
+                        title {
+                            romaji
+                            english
+                            native
+                        }
+                        description
+                        coverImage {
+                            large
+                        }
+                        episodes
+                        averageScore
+                    }
+                }
+            }`;
+
+            const response = await fetch(api_url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({
+                    query: query
+                })
+            });
+
+            const data = await response.json();
+            displayRecommendations(data.data.Page.media);
+        }
+
+        function displayRecommendations(animes) {
+            const recommendationList = document.getElementById('recommendation-list');
+            recommendationList.innerHTML = '';
+
+            animes.forEach((anime, index) => {
+                const listItem = document.createElement('li');
+                listItem.classList.add('recommendation-item');
+                listItem.onclick = () => window.location.href = 'https://www.anime-planet.com/anime/all';  // Change this URL to the desired redirection URL
+
+                const number = document.createElement('span');
+                number.classList.add('number');
+                number.textContent = index + 1;
+                listItem.appendChild(number);
+
+                const img = document.createElement('img');
+                img.src = anime.coverImage.large;
+                listItem.appendChild(img);
+
+                const infoDiv = document.createElement('div');
+                infoDiv.classList.add('info');
+
+                const title = document.createElement('h3');
+                title.textContent = anime.title.romaji + (anime.title.english ? ` (${anime.title.english})` : '');
+                infoDiv.appendChild(title);
+
+                const description = document.createElement('p');
+                description.textContent = anime.description ? anime.description.replace(/<\/?[^>]+(>|$)/g, "").substring(0, 100) + '...' : 'No description available';
+                infoDiv.appendChild(description);
+
+                const details = document.createElement('div');
+                details.classList.add('details');
+
+                const episodes = document.createElement('span');
+                episodes.textContent = `Episodes: ${anime.episodes || 'N/A'}`;
+                details.appendChild(episodes);
+
+                const score = document.createElement('span');
+                score.textContent = `Score: ${anime.averageScore || 'N/A'}`;
+                details.appendChild(score);
+
+                infoDiv.appendChild(details);
+                listItem.appendChild(infoDiv);
+                recommendationList.appendChild(listItem);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchRecommendations);
+    </script>
+</body>
+</html>
